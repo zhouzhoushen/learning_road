@@ -1,1 +1,1 @@
-# learning-road
+Life is a journey of learning.
