@@ -94,7 +94,7 @@ DNN训练很耗资源，并行训练可以提高效率，充分利用计算资�
 我们把GPU叫做Worker，每个Worker负责神经网络连续几层的前向或反向传播，每一时间步认为可以完成一个microbatch的计算量。
 
 <h5 id ="DAPPLE流水线示例">DAPPLE流水线示例</h5>
-![image-20240423170954167](./MPress感想.assets/image-20240423170954167.png)
+![image_20240423170954167](./MPress感想.assets/image_20240423170954167.png)
 
 上图中的数字是microbatch号。可以看到，Worker1-3相继进行microbatch1的各层计算，而且对不同microbatch不同层的计算可以重叠。
 
@@ -118,7 +118,7 @@ DNN训练很耗资源，并行训练可以提高效率，充分利用计算资�
 
 <h5 id ="不同类型的模型数据负载">不同类型的模型数据负载</h5>
 
-![image-20240423203131615](./MPress感想.assets/image-20240423203131615.png)
+![image_20240423203131615](./MPress感想.assets/image_20240423203131615.png)
 
 我们的目标就是找到以可接受的开销来压缩这些数据的方法，以在相同平台上性能不减地训练更大的模型。
 
@@ -128,7 +128,7 @@ DNN训练很耗资源，并行训练可以提高效率，充分利用计算资�
 
 <h5 id ="各GPU显存负载">各GPU显存负载</h5>
 
-![image-20240423213452802](./MPress感想.assets/image-20240423213452802.png)
+![image_20240423213452802](./MPress感想.assets/image_20240423213452802.png)
 
 可以看到存在明显的显存负载不均，负载流水线前期计算任务的GPU负载远大于后期的。这样的话，增加batch或model的大小都会引起GPU报out-of-memory（OOM），即使部分GPU实际上负载并不大。
 
@@ -234,12 +234,14 @@ emulator将收集的测试结果返回给planner，planner将其与先前的测�
 若干次迭代后如果策略接近收敛，就把它传入runtime 模块用于真正的训练。
 
 <h5 id ="MPress系统框图">MPress系统框图</h5>
-![image-20240424194806537](./MPress感想.assets/image-20240424194806537.png)
+
+![image_20240424194806537](./MPress感想.assets/image_20240424194806537.png)
 
 根据[Static模块输出示例](#Static模块输出示例)，静态部分实际上就是进行了一个决策，决策的内容是在流水线的哪些阶段要用哪些显存压缩策略。
 
 <h5 id ="Static模块输出示例">Static模块输出示例</h5>
-![image-20240424195207713](./MPress感想.assets/image-20240424195207713.png)
+
+![image_20240424195207713](./MPress感想.assets/image_20240424195207713.png)
 
 Static模块进行决策的开销不算入运行时开销。因为这是在真正的训练前做的准备工作，而每次策略评估时仅进行一次模型更新迭代，若干次迭代后策略收敛，这个准备工作的开销相比真正运行时的训练开销可以忽略不计。
 
@@ -278,7 +280,8 @@ DGX-2架构的服务器的GPU是全连接并且所有链路都相同。这种环
 DGX-1架构的服务器的GPU互联拓扑结构是非对称的，GPU间的链路数量与带宽存在差异。
 
 <h5 id ="DGX-1的GPU互联拓扑结构">DGX-1的GPU互联拓扑结构</h5>
-![image-20240424204511157](./MPress感想.assets/image-20240424204511157.png)
+
+![image_20240424204511157](./MPress感想.assets/image_20240424204511157.png)
 
 应对方案是传输给各GPU的张量子块大小与对应链路带宽大小成比例，这样不同带宽的链路在相同的用于swap的时间里能最大化带宽利用率。
 
@@ -324,9 +327,11 @@ Device mapping指device-stage mapping。通过将不同流水线阶段的计算�
 
 
 <h5 id ="不用重计算">不用重计算</h5>
+
 ![](https://picx.zhimg.com/50/v2-5e4a3a49668162319d0b251cbb308e3a_720w.webp?source=2c26e567)
 
 <h5 id ="用重计算">用重计算</h5>
+
 ![](https://picx.zhimg.com/50/v2-7060895a91925baed715a78a7f69364d_720w.webp?source=2c26e567)
 
 * 空余的GPU资源宝贵，本文的主要创新点D2D swap的主要优势是速度快且不占GPU资源。我们将它作为另两种显存压缩方法的补充（当另两种方法时延太长不满足live interval时）或代替（另两种方法开销太大时），从而以较小的开销节约更多的显存。
@@ -461,7 +466,8 @@ D2D swap的实现： executor使用两个附属线程执行swap-in和swap-out的
 使用五种不同的配置训练不同规模的Bert，以$10^{12}$FLOPS为衡量指标单位，结果如下：
 
 <h5 id ="基于PipeDream和Bert的性能测试结果">基于PipeDream和Bert的性能测试结果</h5>
-![image-20240425152837744](./MPress感想.assets/image-20240425152837744-1714030129263-1.png)
+
+![image_20240425152837744](./MPress感想.assets/image_20240425152837744.png)
 
 > 批注：如果比较MPress和只去除D2D swap的MPress更有说服力，因为这里无法回答MPress的优秀表现是Recomputation+GPU-CPU Swap的功劳还是D2D Swap的功劳。
 
@@ -505,7 +511,7 @@ D2D swap的实现： executor使用两个附属线程执行swap-in和swap-out的
 
 <h5 id ="基于DGX-1的性能测试结果">基于DGX-1的性能测试结果</h5>
 
-![image-20240426141105860](./MPress感想.assets/image-20240426141105860.png)
+![image_20240426141105860](./MPress感想.assets/image_20240426141105860.png)
 
 不做任何显存压缩优化的裸DAPPLE最先爆显存，重计算可以支持更大的模型，但有较大的性能损失（19.2%）。
 
@@ -517,7 +523,7 @@ MPress的训练效率比ZeRO-Infinity还高40%左右，因为CPU-GPU交换不用
 
 <h5 id ="基于DGX-2的性能测试结果">基于DGX-2的性能测试结果</h5>
 
-![image-20240426143859631](./MPress感想.assets/image-20240426143859631-1714113543900-1.png)
+![image_20240426143859631](./MPress感想.assets/image_20240426143859631.png)
 
 相比DGX-1，DGX-2用了计算速度更快、显存更大的A100显卡以及全连接的显卡互联结构，因此所有配置的训练系统训练速度都加快了且可训练的最大模型规模增大了。
 
@@ -567,7 +573,7 @@ MPress的训练效率比ZeRO-Infinity还高40%左右，因为CPU-GPU交换不用
 
 <h5 id ="device mapping和data stripping的效用测评">device mapping和data stripping的效用测评</h5>
 
-![image-20240426165437559](./MPress感想.assets/image-20240426165437559-1714121681480-3.png)
+![image_20240426165437559](./MPress感想.assets/image_20240426165437559.png)
 
 默认的基准情况是：
 
@@ -588,7 +594,7 @@ DGX-2使用对称的GPU互联结构，任何device-stage mapping是相同的，�
 
 <h5 id ="三种显存压缩技术的时间开销">三种显存压缩技术的时间开销</h5>
 
-![image-20240426184458805](./MPress感想.assets/image-20240426184458805-1714128302740-5.png)
+![image_20240426184458805](./MPress感想.assets/image_20240426184458805.png)
 
 根据live interval和三种显存压缩技术的压缩开销来为不同张量选择最合适的压缩方式：
 
@@ -607,7 +613,7 @@ DGX-2使用对称的GPU互联结构，任何device-stage mapping是相同的，�
 
 <h5 id ="组合策略及压缩效用">组合策略及压缩效用</h5>
 
-![image-20240426190828078](./MPress感想.assets/image-20240426190828078.png)
+![image_20240426190828078](./MPress感想.assets/image_20240426190828078.png)
 
 论文中的内容就是对该表的内容进行了文字化的复述，着重体现D2D swap的效用。
 
